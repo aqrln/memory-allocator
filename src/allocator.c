@@ -6,9 +6,9 @@
 #include "_allocator_internal.h"
 #include "block_header.h"
 
-block_header_t *first_block;
-block_header_t *last_block;
-size_t heap_size;
+block_header_t *first_block = NULL;
+block_header_t *last_block = NULL;
+size_t heap_size = 0;
 
 bool mem_init(size_t size) {
   first_block = (block_header_t *) calloc(size, 1);
@@ -41,6 +41,13 @@ bool mem_init(size_t size) {
   set_free(middle_block, true);
 
   return true;
+}
+
+void mem_destroy(void) {
+  free(first_block);
+  first_block = NULL;
+  last_block = NULL;
+  heap_size = 0;
 }
 
 void *mem_alloc(size_t size) {

@@ -10,6 +10,11 @@
 bool mem_init(size_t heap_size);
 
 /**
+ * Destroy the heap.
+ */
+void mem_destroy(void);
+
+/**
  * Allocate a block of memory with specified size. If the allocation is
  * successful, return the address of the beginning of the block, NULL
  * otherwise.
