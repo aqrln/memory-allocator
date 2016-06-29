@@ -71,7 +71,7 @@ void *header_to_addr(block_header_t *block) {
 block_header_t *find_free_block(size_t requested_size) {
   block_header_t *current = first_block + 1;
   block_header_t *perfect = first_block;
-  size_t perfect_size = 0;
+  size_t perfect_size = SIZE_MAX;
 
   while (current != last_block) {
     size_t current_size = get_block_size(current);
@@ -81,6 +81,7 @@ block_header_t *find_free_block(size_t requested_size) {
       perfect = current;
       perfect_size = current_size;
     }
+    current = get_next(current);
   }
 
   if (perfect == first_block) {
