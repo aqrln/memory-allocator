@@ -1,15 +1,23 @@
 #include <stdio.h>
 
 #include "allocator.h"
-#include "block_header.h"
 
 int main() {
-  block_header_t header;
-  set_previous(&header, (block_header_t *) 0x1122334455667788);
-  set_next(&header, (block_header_t *) 0x1122334455667788);
-  set_free(&header, true);
+  printf("Initialize heap\n");
+  mem_init(100 * 1024 * 1024);
 
-  printf("%p %p %d\n", get_previous(&header), get_next(&header), is_free(&header));
+  printf("Allocate an array\n");
+  int *array = mem_alloc(3 * sizeof(int));
+  array[0] = 1;
+  array[1] = 2;
+  array[2] = 3;
 
+  printf("%d\n%d\n%d\n", array[0], array[1], array[2]);
+
+  printf("Free memory\n");
+  mem_free(array);
+
+  printf("Destroy heap\n");
+  mem_destroy();
   return 0;
 }
