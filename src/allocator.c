@@ -107,5 +107,25 @@ void *mem_realloc(void *addr, size_t size) {
 }
 
 void mem_free(void *addr) {
+  block_header_t *block = (block_header_t *)((size_t) addr - sizeof(block_header_t));
+  if (is_free(block)) {
+    return;
+  }
 
+  set_free(block, true);
+
+  if (is_free(get_previous(block))) {
+    block = merge_blocks(get_previous(block), block);
+  }
+
+  if (is_free(get_next(block))) {
+    merge_blocks(block, get_next(block));
+  }
+}
+
+block_header_t *merge_blocks(block_header_t *left, block_header_t *right) {
+  block_header_t *next = get_next(right);
+  set_next(left, next);
+  set_previous(next, left);
+  return left;
 }
