@@ -1,15 +1,15 @@
-NAME = lab1
+export NAME = lab1
 
-CC = gcc
-CFLAGS = -std=c11 -g -Wall -Wextra -I src
+export CC = gcc
+export STRIP = strip
 
-SOURCES := $(shell find src -name '*.c')
-OBJECTS := $(patsubst src/%.c,build/obj/%.o,$(SOURCES))
-DEPENDENCIES := $(patsubst src/%.c,build/deps/%.d,$(SOURCES))
+export CFLAGS = -std=c11 -Wall -Wextra -I src
+export RELEASE_CFLAGS = -O3
+export DEBUG_CFLAGS = -g -DDEBUG
 
-.PHONY: all clean clean-build build run
+.PHONY: all release debug clean clean-build run run-debug
 
-all: build
+all: release debug
 
 clean: clean-build
 	-$(RM) -r bin
@@ -17,17 +17,23 @@ clean: clean-build
 clean-build:
 	-$(RM) -r build
 
-run: build
+run: bin/$(NAME)
 	bin/$(NAME)
 
-build: bin/$(NAME)
+run-debug: build/debug/bin/$(NAME)
+	build/debug/bin/$(NAME)
 
--include $(DEPENDENCIES)
+release: bin/$(NAME)
 
-bin/$(NAME): $(OBJECTS)
+debug: build/debug/bin/$(NAME)
+
+bin/$(NAME): build/release/bin/$(NAME)
 	@mkdir -p bin
-	$(CC) -o bin/$(NAME) $(OBJECTS)
+	cp build/release/bin/$(NAME) bin/$(NAME)
+	$(STRIP) bin/$(NAME)
 
-build/obj/%.o: src/%.c
-	@mkdir -p build/deps build/obj
-	$(CC) $(CFLAGS) -MMD -MP -MF build/deps/$*.d -o $@ -c $<
+build/debug/bin/$(NAME):
+	$(MAKE) -f Makefile.build MODE=debug ADDITIONAL_CFLAGS='$(DEBUG_CFLAGS)'
+
+build/release/bin/$(NAME):
+	$(MAKE) -f Makefile.build MODE=release ADDITIONAL_CFLAGS='$(RELEASE_CFLAGS)'

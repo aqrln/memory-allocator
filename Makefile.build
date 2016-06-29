@@ -1,0 +1,17 @@
+SOURCES := $(shell find src -name '*.c')
+OBJECTS := $(patsubst src/%.c,build/$(MODE)/obj/%.o,$(SOURCES))
+DEPENDENCIES := $(patsubst src/%.c,build/$(MODE)/deps/%.d,$(SOURCES))
+
+.PHONY: all
+
+all: build/$(MODE)/bin/$(NAME)
+
+-include $(DEPENDENCIES)
+
+build/$(MODE)/bin/$(NAME): $(OBJECTS)
+	@mkdir -p build/$(MODE)/bin
+	$(CC) -o build/$(MODE)/bin/$(NAME) $(OBJECTS)
+
+build/$(MODE)/obj/%.o: src/%.c
+	@mkdir -p build/$(MODE)/deps build/$(MODE)/obj
+	$(CC) $(CFLAGS) $(ADDITIONAL_CFLAGS) -MMD -MP -MF build/$(MODE)/deps/$*.d -o $@ -c $<
