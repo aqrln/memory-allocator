@@ -177,7 +177,7 @@ block_header_t *expand_block(block_header_t *block, size_t size) {
     merge_blocks(prev, block);
     merge_blocks(prev, next);
     set_free(prev, false);
-    // copy data
+    memcpy(header_to_addr(prev), data, size);
     shrink_block(prev, size);
     return prev;
   }
