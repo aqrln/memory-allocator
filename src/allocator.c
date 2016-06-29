@@ -1,3 +1,4 @@
+#include <memory.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -50,12 +51,13 @@ void *mem_alloc(size_t size) {
     return NULL;
   }
 
-  if (get_block_size(block) > size + sizeof(block_header_t) + __SIZEOF_SIZE_T__) {
-    split_block(block, size);
-  }
-
+  shrink_block(block, size);
   set_free(block, false);
 
+  return header_to_addr(block);
+}
+
+void *header_to_addr(block_header_t *block) {
   return (void *)((size_t) block + sizeof(block_header_t));
 }
 
@@ -103,11 +105,89 @@ void split_block(block_header_t *block, size_t size) {
 }
 
 void *mem_realloc(void *addr, size_t size) {
-  return NULL;
+  if (addr == NULL) {
+    return mem_alloc(size);
+  }
+
+  size = align_length(size);
+
+  block_header_t *block = addr_to_header(addr);
+  size_t block_size = get_block_size(block);
+
+  if (size == block_size) {
+    return addr;
+  }
+
+  if (size < block_size) {
+    shrink_block(block, size);
+    return addr;
+  }
+
+  block_header_t *new_block = expand_block(block, size);
+  if (new_block == NULL) {
+    return NULL;
+  }
+
+  return header_to_addr(new_block);
+}
+
+void shrink_block(block_header_t *block, size_t size) {
+  if (get_block_size(block) > size + sizeof(block_header_t) + __SIZEOF_SIZE_T__) {
+    split_block(block, size);
+  }
+}
+
+block_header_t *expand_block(block_header_t *block, size_t size) {
+  void *data = header_to_addr(block);
+
+  block_header_t *prev = get_previous(block);
+  block_header_t *next = get_next(block);
+
+  size_t block_size = get_block_size(block);
+  size_t prev_size  = get_block_size(prev);
+  size_t next_size  = get_block_size(next);
+
+  size_t size_with_prev = block_size + prev_size + sizeof(block_header_t);
+  size_t size_with_next = block_size + next_size + sizeof(block_header_t);
+  size_t size_with_prev_and_next = size_with_prev + size_with_next - block_size;
+
+  if (size_with_prev >= size) {
+    merge_blocks(prev, block);
+    set_free(prev, false);
+    memcpy(header_to_addr(prev), data, size);
+    shrink_block(prev, size);
+    return prev;
+  }
+
+  if (size_with_next >= size) {
+    merge_blocks(block, next);
+    memcpy(header_to_addr(block), data, size);
+    shrink_block(block, size);
+    return block;
+  }
+
+  if (size_with_prev_and_next >= size) {
+    merge_blocks(prev, block);
+    merge_blocks(prev, next);
+    set_free(prev, false);
+    // copy data
+    shrink_block(prev, size);
+    return prev;
+  }
+
+  void *new_area = mem_alloc(size);
+  if (new_area == NULL) {
+    return NULL;
+  }
+  
+  memcpy(new_area, data, size);
+  mem_free(data);
+
+  return addr_to_header(new_area);
 }
 
 void mem_free(void *addr) {
-  block_header_t *block = (block_header_t *)((size_t) addr - sizeof(block_header_t));
+  block_header_t *block = addr_to_header(addr);
   if (is_free(block)) {
     return;
   }
@@ -121,6 +201,10 @@ void mem_free(void *addr) {
   if (is_free(get_next(block))) {
     merge_blocks(block, get_next(block));
   }
+}
+
+block_header_t *addr_to_header(void *addr) {
+  return (block_header_t *)((size_t) addr - sizeof(block_header_t));
 }
 
 block_header_t *merge_blocks(block_header_t *left, block_header_t *right) {
