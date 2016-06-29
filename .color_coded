@@ -3,3 +3,5 @@ c
 -Wall
 -Wextra
 -std=c11
+-I
+src

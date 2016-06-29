@@ -1,7 +1,7 @@
 NAME = lab1
 
 CC = gcc
-CFLAGS = -std=c11 -g -Wall -Wextra
+CFLAGS = -std=c11 -g -Wall -Wextra -I src
 
 SOURCES := $(shell find src -name '*.c')
 OBJECTS := $(patsubst src/%.c,build/obj/%.o,$(SOURCES))
