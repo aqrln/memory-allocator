@@ -32,8 +32,10 @@ bin/$(NAME): build/release/bin/$(NAME)
 	cp build/release/bin/$(NAME) bin/$(NAME)
 	$(STRIP) bin/$(NAME)
 
-build/debug/bin/$(NAME):
+build/debug/bin/$(NAME): FORCE
 	$(MAKE) -f Makefile.build MODE=debug ADDITIONAL_CFLAGS='$(DEBUG_CFLAGS)'
 
-build/release/bin/$(NAME):
+build/release/bin/$(NAME): FORCE
 	$(MAKE) -f Makefile.build MODE=release ADDITIONAL_CFLAGS='$(RELEASE_CFLAGS)'
+
+FORCE:
