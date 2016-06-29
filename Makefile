@@ -7,12 +7,20 @@ SOURCES := $(shell find src -name '*.c')
 OBJECTS := $(patsubst src/%.c,build/obj/%.o,$(SOURCES))
 DEPENDENCIES := $(patsubst src/%.c,build/deps/%.d,$(SOURCES))
 
-.PHONY: all clean
+.PHONY: all clean clean-build build run
 
-all: bin/$(NAME)
+all: build
 
-clean:
-	-$(RM) -r bin build
+clean: clean-build
+	-$(RM) -r bin
+
+clean-build:
+	-$(RM) -r build
+
+run: build
+	bin/$(NAME)
+
+build: bin/$(NAME)
 
 -include $(DEPENDENCIES)
 
