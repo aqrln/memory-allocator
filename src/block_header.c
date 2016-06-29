@@ -29,5 +29,8 @@ void set_free(block_header_t *header, bool free) {
 }
 
 size_t get_block_size(block_header_t *header) {
+  if (get_next(header) == NULL) {
+    return 0;
+  }
   return (size_t) get_next(header) - (size_t) header - sizeof(block_header_t);
 }

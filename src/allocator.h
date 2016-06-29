@@ -1,6 +1,13 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
+
+/**
+ * Initialize the heap of specified size. Return true if initialization
+ * is successful, false otherwise.
+ */
+bool mem_init(size_t heap_size);
 
 /**
  * Allocate a block of memory with specified size. If the allocation is
