@@ -159,26 +159,27 @@ block_header_t *expand_block(block_header_t *block, size_t size) {
   size_t size_with_next = block_size + next_size + sizeof(block_header_t);
   size_t size_with_prev_and_next = size_with_prev + size_with_next - block_size;
 
-  if (size_with_prev >= size) {
+  if (is_free(prev) && size_with_prev >= size) {
     merge_blocks(prev, block);
     set_free(prev, false);
-    memcpy(header_to_addr(prev), data, size);
+    memmove(header_to_addr(prev), data, block_size);
     shrink_block(prev, size);
     return prev;
   }
 
-  if (size_with_next >= size) {
+  if (is_free(next) && size_with_next >= size) {
     merge_blocks(block, next);
-    memcpy(header_to_addr(block), data, size);
     shrink_block(block, size);
     return block;
   }
 
-  if (size_with_prev_and_next >= size) {
+  if (is_free(prev) &&
+      is_free(next) &&
+      size_with_prev_and_next >= size) {
     merge_blocks(prev, block);
     merge_blocks(prev, next);
     set_free(prev, false);
-    memcpy(header_to_addr(prev), data, size);
+    memmove(header_to_addr(prev), data, block_size);
     shrink_block(prev, size);
     return prev;
   }
@@ -187,8 +188,8 @@ block_header_t *expand_block(block_header_t *block, size_t size) {
   if (new_area == NULL) {
     return NULL;
   }
-  
-  memcpy(new_area, data, size);
+
+  memcpy(new_area, data, block_size);
   mem_free(data);
 
   return addr_to_header(new_area);
