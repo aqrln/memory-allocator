@@ -1,4 +1,4 @@
-export NAME = lab1
+export NAME = allocator-test
 
 export CC = gcc
 export STRIP = strip
