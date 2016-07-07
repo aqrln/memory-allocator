@@ -1,6 +1,9 @@
 #include <memory.h>
 #include <stdlib.h>
+
+#ifdef DEBUG
 #include <stdio.h>
+#endif
 
 #include "allocator.h"
 #include "_allocator_internal.h"
